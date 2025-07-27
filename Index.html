@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>V Rising-dle</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="title">V Rising-dle</h1>
+            <p class="subtitle">¡Adivina el Sangre V! (De momento solo Aleatorio)</p>
+        </div>
+
+        <div class="game-section">
+            <div class="game-info">
+                <div class="attempts-counter">Intentos: <span id="attemptCount">0</span></div>
+                <button class="reset-btn" onclick="resetGame()">Nuevo Juego</button>
+            </div>
+
+            <div class="search-container" id="searchContainer">
+                <input type="text" id="characterSearch" placeholder="Escribe el nombre de un Sangre V..." autocomplete="off">
+                <div class="suggestions hidden" id="suggestions"></div>
+            </div>
+
+            <div id="victoryMessage" class="victory-message hidden">
+                ¡Felicidades! Has adivinado correctamente el Sangre V.
+            </div>
+
+            <table class="guesses-table">
+                <thead>
+                    <tr>
+                        <th>Personaje</th>
+                        <th>Raza</th>
+                        <th>Sexo</th>
+                        <th>Magia</th>
+                        <th>Zona</th>
+                        <th>Acto</th>
+                    </tr>
+                </thead>
+                <tbody id="guessesTableBody">
+                </tbody>
+            </table>
+
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color correct"></div>
+                    <span>Correcto</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color partial"></div>
+                    <span>Parcial</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color incorrect"></div>
+                    <span>Incorrecto</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Base de datos de personajes de V Rising
+        const characters = [
+            {
+    name: "Lobo Alfa",
+    race: "Bestia",
+    gender: "Masculino",
+    magic: "Caos",
+    zone: ["Bosque de Farbane"],
+    act: "I"
+},
+{
+    name: "Keely, la Arquera de Hielo",
+    race: "Humano",
+    gender: "Femenino",
+    magic: "Escarcha",
+    zone: ["Bosque de Farbane"],
+    act: "I"
+},
+{
+    name: "Errol, el Rompepiedra",
+    race: "Humano",
+    gender: "Masculino",
+    magic: "Caos",
+    zone: ["Bosque de Farbane"],
+    act: "I"
+},
+{
+    name: "Rufus, el Capataz",
+    race: "Humano",
+    gender: "Masculino",
+    magic: "Profana",
+    zone: ["Bosque de Farbane"],
+    act: "I"
+},
+{
+    name: "Lidia, la Arquera del Caos",
+    race: "Humano",
+    gender: "Femenino",
+    magic: "Caos",
+    zone: ["Bosque de Farbane"],
+    act: "I"
+},
+{
+    name: "Goreswine, el Asolador",
+    race: "Bestia",
+    gender: "Masculino",
+    magic: "Profana",
+    zone: ["Bosque de Farbane"],
+    act: "I"
+},
+{
+    name: "Grayson, el Armero",
+    race: "Humano",
+    gender: "Masculino",
+    magic: "Profana",
+    zone: ["Bosque de Farbane"],
+    act: "I"
+},
+{
+    name: "Rata Pútrida",
+    race: "Vermín",
+    gender: "Masculino",
+    magic: "Ninguno",
+    zone: ["Bosque de Farbane"],
+    act: "I"
+},
+{
+    name: "Clive, el Pirómano",
+    race: "Humano",
+    gender: "Masculino",
+    magic: "Escarcha",
+    zone: ["Bosque de Farbane"],
+    act: "I"
+},
+{
+    name: "Polora, la Caminahadas",
+    race: "Humano",
+    gender: "Femenino",
+    magic: "Ilusión",
+    zone: ["Bosque de Farbane"],
+    act: "I"
+},
+{
+    name: "Oso Feroz",
+    race: "Bestia",
+    gender: "Masculino",
+    magic: "Caos",
+    zone: ["Bosque de Farbane"],
+    act: "I"
+},
+{
+    name: "Nicholaus, el Caído",
+    race: "Humano",
+    gender: "Masculino",
+    magic: "Profana",
+    zone: ["Bosque de Farbane"],
+    act: "I"
+},
+{
+    name: "Quincey, el Rey Bandido",
+    race: "Humano",
+    gender: "Masculino",
+    magic: "Profana",
+    zone: ["Bosque de Farbane"],
+    act: "I"
+},
+{
+    name: "Tristán, el Cazavampiros",
+    race: "Humano",
+    gender: "Masculino",
+    magic: "Ilusión",
+    zone: ["Bosque de Farbane"],
+    act: "II"
+},
+{
+    name: "Beatrice, la Sastre",
+    race: "Humano",
+    gender: "Femenino",
+    magic: "Caos",
+    zone: ["Tierras de Dunley"],
+    act: "II"
+},
+{
+    name: "Vincent, el Escarchado",
+    race: "Humano",
+    gender: "Masculino",
+    magic: "Escarcha",
+    zone: ["Tierras de Dunley"],
+    act: "II"
+},
+{
+    name: "Christina, la Sacerdotisa del Sol",
+    race: "Humano",
+    gender: "Femenino",
+    magic: "Ilusión",
+    zone: ["Tierras de Dunley"],
+    act: "II"
+},
+{
+    name: "Leandra, la Sacerdotisa Oscura",
+    race: "Humano",
+    gender: "Femenino",
+    magic: "Profana",
+    zone: ["Tierras de Dunley"],
+    act: "II"
+},
+{
+    name: "Terah, la Geomántica",
+    race: "Humano",
+    gender: "Femenino",
+    magic: "Tormenta",
+    zone: ["Tierras de Dunley"],
+    act: "II"
+},
+{
+    name: "Meredith, la Arquera Brillante",
+    race: "Humano",
+    gender: "Femenino",
+    magic: "Caos",
+    zone: ["Tierras de Dunley"],
+    act: "II"
+},
+{
+    name: "Octavian, el Capitán de la Milicia",
+    race: "Humano",
+    gender: "Masculino",
+    magic: "Caos",
+    zone: ["Tierras de Dunley"],
+    act: "II"
+},
+{
+    name: "Raziel, el Pastor",
+    race: "Humano",
+    gender: "Masculino",
+    magic: "Profana",
+    zone: ["Tierras de Dunley"],
+    act: "II"
+},
+{
+    name: "Jade, la Cazadora de Vampiros",
+    race: "Humano",
+    gender: "Femenino",
+    magic: "Ilusión",
+    zone: ["Tierras de Dunley"],
+    act: "II"
+},
+{
+    name: "Frostmaw, el Terror de la Montaña",
+    race: "Bestia",
+    gender: "Masculino",
+    magic: "Escarcha",
+    zone: ["Montañas Sagradas"],
+    act: "II"
+},
+{
+    name: "Terrorclaw, el Ogro",
+    race: "Bestia",
+    gender: "Masculino",
+    magic: "Escarcha",
+    zone: ["Montañas Sagradas"],
+    act: "II"
+},
+{
+    name: "Ziva, la Ingeniera",
+    race: "Humano",
+    gender: "Femenino",
+    magic: "Caos",
+    zone: ["Gloomrot Sur"],
+    act: "III"
+},
+{
+    name: "Domina, la Danzadora de Espadas",
+    race: "Humano",
+    gender: "Femenino",
+    magic: "Ilusión",
+    zone: ["Gloomrot Sur"],
+    act: "III"
+},
+{
+    name: "Angram, el Purificador",
+    race: "Humano",
+    gender: "Masculino",
+    magic: "Profana",
+    zone: ["Gloomrot Sur"],
+    act: "III"
+},
+{
+    name: "Ungora, la Reina Araña",
+    race: "Bestia",
+    gender: "Femenino",
+    magic: "Tormenta",
+    zone: ["Bosque Maldito"],
+    act: "III"
+},
+{
+    name: "Foulrot, el Robaalmas",
+    race: "Humano",
+    gender: "Masculino",
+    magic: "Profana",
+    zone: ["Bosque Maldito"],
+    act: "III"
+},
+{
+    name: "El Duque de Balaton",
+    race: "Humano",
+    gender: "Masculino",
+    magic: "Caos",
+    zone: ["Bosque Maldito"],
+    act: "III"
+},
+{
+    name: "Matka, la Tejedora de Maldiciones",
+    race: "Humano",
+    gender: "Femenino",
+    magic: "Ilusión",
+    zone: ["Bosque Maldito"],
+    act: "IV"
+},
+{
+    name: "Styx, el Campeón Nocturno",
+    race: "Humano",
+    gender: "Masculino",
+    magic: "Caos",
+    zone: ["Bosque Maldito"],
+    act: "IV"
+},
+{
+    name: "Gorecrusher, el Behemoth",
+    race: "Bestia",
+    gender: "Masculino",
+    magic: "Ilusión",
+    zone: ["Bosque Maldito"],
+    act: "IV"
+},
+{
+    name: "Mairwyn, la Elementalista",
+    race: "Humano",
+    gender: "Femenino",
+    magic: "Escarcha",
+    zone: ["Colinas de Luz Plateada"],
+    act: "IV"
+},
+{
+    name: "Azariel, el Portador del Sol",
+    race: "Humano",
+    gender: "Masculino",
+    magic: "Caos",
+    zone: ["Colinas de Luz Plateada"],
+    act: "IV"
+},
+{
+    name: "Morian, Matriarca Alatormenta",
+    race: "Bestia",
+    gender: "Femenino",
+    magic: "Tormenta",
+    zone: ["Colinas de Luz Plateada"],
+    act: "IV"
+},
+{
+    name: "Solarus, el Inmaculado",
+    race: "Humano",
+    gender: "Masculino",
+    magic: "Profana",
+    zone: ["Colinas de Luz Plateada"],
+    act: "IV"
+},
+{
+    name: "Voltatia, la Maestra del Poder",
+    race: "Humano",
+    gender: "Femenino",
+    magic: "Ilusión",
+    zone: ["Gloomrot Norte"],
+    act: "IV"
+},
+{
+    name: "Adam, el Primogénito",
+    race: "Vampiro",
+    gender: "Masculino",
+    magic: "Tormenta",
+    zone: ["Gloomrot Norte"],
+    act: "IV"
+},
+{
+    name: "Drácula, el Rey Inmortal",
+    race: "Vampiro",
+    gender: "Masculino",
+    magic: "Profana",
+    zone: ["Ruinas de Mortium"],
+    act: "IV"
+}
+
+        ];
+
+        let targetCharacter = null;
+        let guesses = [];
+        let gameWon = false;
+
+        // Elementos del DOM
+        const searchInput = document.getElementById('characterSearch');
+        const suggestionsDiv = document.getElementById('suggestions');
+        const guessesTableBody = document.getElementById('guessesTableBody');
+        const attemptCount = document.getElementById('attemptCount');
+        const victoryMessage = document.getElementById('victoryMessage');
+        const searchContainer = document.getElementById('searchContainer');
+
+        // Inicializar juego
+        function initGame() {
+            targetCharacter = characters[Math.floor(Math.random() * characters.length)];
+            guesses = [];
+            gameWon = false;
+            updateDisplay();
+            console.log('Personaje objetivo:', targetCharacter.name); // Para debugging
+        }
+
+        // Actualizar pantalla
+        function updateDisplay() {
+            attemptCount.textContent = guesses.length;
+            
+            // Limpiar tabla
+            guessesTableBody.innerHTML = '';
+            
+            // Añadir cada intento
+            guesses.forEach(guess => {
+                const row = document.createElement('tr');
+                
+                const comparison = compareCharacters(guess, targetCharacter);
+                
+                row.innerHTML = `
+                    <td class="${comparison.name}">${guess.name}</td>
+                    <td class="${comparison.race}">${guess.race}</td>
+                    <td class="${comparison.gender}">${guess.gender}</td>
+                    <td class="${comparison.magic}">${guess.magic}</td>
+                    <td class="${comparison.zone}">${guess.zone.join(', ')}</td>
+                    <td class="${comparison.act}">${guess.act}</td>
+                `;
+                
+                guessesTableBody.appendChild(row);
+            });
+
+            // Mostrar mensaje de victoria si ganó
+            if (gameWon) {
+                victoryMessage.classList.remove('hidden');
+                searchContainer.classList.add('hidden');
+            } else {
+                victoryMessage.classList.add('hidden');
+                searchContainer.classList.remove('hidden');
+            }
+        }
+
+        // Comparar personajes
+        function compareCharacters(guess, target) {
+            const comparison = {};
+            
+            // Comparar nombre
+            comparison.name = guess.name === target.name ? 'correct' : 'incorrect';
+            
+            // Comparar raza
+            comparison.race = guess.race === target.race ? 'correct' : 'incorrect';
+            
+            // Comparar género
+            comparison.gender = guess.gender === target.gender ? 'correct' : 'incorrect';
+            
+            // Comparar magia
+            comparison.magic = guess.magic === target.magic ? 'correct' : 'incorrect';
+            
+            // Comparar acto
+            comparison.act = guess.act === target.act ? 'correct' : 'incorrect';
+            
+            // Comparar zonas (arrays)
+            if (arraysEqual(guess.zone, target.zone)) {
+                comparison.zone = 'correct';
+            } else if (shareZones(guess.zone, target.zone)) {
+                comparison.zone = 'partial';
+            } else {
+                comparison.zone = 'incorrect';
+            }
+            
+            return comparison;
+        }
+
+        // Verificar si dos arrays de zonas son iguales
+        function arraysEqual(arr1, arr2) {
+            if (arr1.length !== arr2.length) return false;
+            const sorted1 = [...arr1].sort();
+            const sorted2 = [...arr2].sort();
+            return sorted1.every((val, index) => val === sorted2[index]);
+        }
+
+        // Verificar si dos arrays de zonas comparten al menos una zona
+        function shareZones(zones1, zones2) {
+            return zones1.some(zone => zones2.includes(zone));
+        }
+
+        // Buscar personajes
+        function searchCharacters(query) {
+            if (!query) return [];
+            
+            return characters.filter(char => 
+                char.name.toLowerCase().includes(query.toLowerCase())
+            ).slice(0, 5);
+        }
+
+        // Mostrar sugerencias
+        function showSuggestions(suggestions) {
+            if (suggestions.length === 0) {
+                suggestionsDiv.classList.add('hidden');
+                return;
+            }
+
+            suggestionsDiv.innerHTML = '';
+            suggestions.forEach(char => {
+                const div = document.createElement('div');
+                div.className = 'suggestion-item';
+                div.textContent = char.name;
+                div.onclick = () => selectCharacter(char);
+                suggestionsDiv.appendChild(div);
+            });
+
+            suggestionsDiv.classList.remove('hidden');
+        }
+
+        // Seleccionar personaje
+        function selectCharacter(character) {
+            if (gameWon) return;
+
+            // Verificar si ya fue adivinado
+            if (guesses.some(guess => guess.name === character.name)) {
+                return;
+            }
+
+            guesses.push(character);
+            
+            if (character.name === targetCharacter.name) {
+                gameWon = true;
+            }
+
+            searchInput.value = '';
+            suggestionsDiv.classList.add('hidden');
+            updateDisplay();
+        }
+
+        // Reiniciar juego
+        function resetGame() {
+            initGame();
+        }
+
+        // Event listeners
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value;
+            const suggestions = searchCharacters(query);
+            showSuggestions(suggestions);
+        });
+
+        searchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const query = e.target.value;
+                const exactMatch = characters.find(char => 
+                    char.name.toLowerCase() === query.toLowerCase()
+                );
+                if (exactMatch) {
+                    selectCharacter(exactMatch);
+                }
+            }
+        });
+
+        // Ocultar sugerencias al hacer clic fuera
+        document.addEventListener('click', (e) => {
+            if (!searchInput.contains(e.target) && !suggestionsDiv.contains(e.target)) {
+                suggestionsDiv.classList.add('hidden');
+            }
+        });
+
+        // Inicializar el juego al cargar la página
+        initGame();
+    </script>
+</body>
+</html>
