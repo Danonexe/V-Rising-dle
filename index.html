@@ -10,7 +10,7 @@
     <div class="container">
         <div class="header">
             <h1 class="title">V Rising-dle</h1>
-            <p class="subtitle">¡Adivina el Sangre V! (De momento solo Aleatorio)</p>
+            <p class="subtitle">¡Adivina el Sangre V!</p>
         </div>
 
         <div class="game-section">
@@ -25,7 +25,7 @@
             </div>
 
             <div id="victoryMessage" class="victory-message hidden">
-                ¡Felicidades! Has adivinado correctamente el Sangre V
+                ¡Felicidades! Has adivinado correctamente el Sangre V.
             </div>
 
             <table class="guesses-table">
@@ -391,7 +391,6 @@
     zone: ["Ruinas de Mortium"],
     act: "IV"
 }
-
         ];
 
         let targetCharacter = null;
@@ -498,8 +497,12 @@
         function searchCharacters(query) {
             if (!query) return [];
             
+            // Obtener nombres de personajes ya adivinados
+            const guessedNames = guesses.map(guess => guess.name);
+            
             return characters.filter(char => 
-                char.name.toLowerCase().includes(query.toLowerCase())
+                char.name.toLowerCase().includes(query.toLowerCase()) &&
+                !guessedNames.includes(char.name)
             ).slice(0, 5);
         }
 
